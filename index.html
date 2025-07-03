@@ -3,432 +3,764 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NexusTask | Gestão Inteligente de Tarefas</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Lista de Tarefas com Bloco de Notas</title>
     <style>
         :root {
-            --primary: #6C5CE7;
-            --primary-light: #A29BFE;
-            --primary-dark: #5649C0;
-            --secondary: #00B894;
-            --danger: #FF7675;
-            --warning: #FDCB6E;
-            --light: #F8F9FA;
-            --dark: #2D3436;
-            --gray: #636E72;
-            --light-gray: #DFE6E9;
-            --card-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            --transition: all 0.25s cubic-bezier(0.645, 0.045, 0.355, 1);
-            --radius: 12px;
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4fc3f7;
+            --notes-color: #fff9c4;
+            --background-color: #f5f7fa;
+            --text-color: #333;
+            --completed-color: #888;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
         }
 
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-            color: var(--dark);
+            background-color: var(--background-color);
+            color: var(--text-color);
             line-height: 1.6;
-            min-height: 100vh;
-            padding: 2rem;
-        }
-
-        .container {
-            max-width: 800px;
+            padding: 20px;
+            max-width: 1000px;
             margin: 0 auto;
-            animation: fadeIn 0.5s ease-out;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .header {
+        h1 {
             text-align: center;
-            margin-bottom: 3rem;
-            position: relative;
+            margin-bottom: 30px;
+            color: var(--secondary-color);
         }
 
-        .header h1 {
-            font-size: 2.8rem;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 0.5rem;
-            font-weight: 800;
+        .app-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
-        .header p {
-            color: var(--gray);
-            font-size: 1.2rem;
-            max-width: 600px;
-            margin: 0 auto;
+        @media (max-width: 768px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
         }
 
-        .task-app {
+        .panel {
             background-color: white;
-            border-radius: var(--radius);
-            box-shadow: var(--card-shadow);
-            padding: 2.5rem;
-            margin-bottom: 2rem;
-            transition: var(--transition);
-            border: 1px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            height: fit-content;
         }
 
-        .task-form {
+        .panel h2 {
+            margin-bottom: 20px;
+            color: var(--secondary-color);
             display: flex;
-            gap: 12px;
-            margin-bottom: 2.5rem;
-            position: relative;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .task-input {
+        .input-group {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .input-group input {
             flex: 1;
-            padding: 16px 20px;
-            font-size: 1.05rem;
-            border: 2px solid var(--light-gray);
-            border-radius: var(--radius);
-            transition: var(--transition);
-            background-color: rgba(255,255,255,0.8);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .task-input:focus {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px 0 0 4px;
+            font-size: 16px;
             outline: none;
-            border-color: var(--primary-light);
-            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15);
-            background-color: white;
+            transition: border 0.3s;
         }
 
-        .add-btn {
-            padding: 16px 28px;
-            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+        .input-group input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .input-group button {
+            padding: 12px 20px;
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: var(--radius);
-            font-weight: 600;
+            border-radius: 0 4px 4px 0;
             cursor: pointer;
-            transition: var(--transition);
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .input-group button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .filter-buttons {
             display: flex;
-            align-items: center;
             gap: 10px;
-            box-shadow: 0 4px 6px rgba(108, 92, 231, 0.2);
+            margin-bottom: 20px;
         }
 
-        .add-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(108, 92, 231, 0.25);
+        .filter-buttons button {
+            flex: 1;
+            padding: 10px;
+            background-color: #eee;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
         }
 
-        .add-btn:active {
-            transform: translateY(0);
+        .filter-buttons button:hover {
+            background-color: #ddd;
         }
 
-        .task-stats {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
-            color: var(--gray);
-            font-size: 0.95rem;
-            padding: 0 0.5rem;
+        .filter-buttons button.active {
+            background-color: var(--primary-color);
+            color: white;
         }
 
-        .task-list {
-            list-style: none;
+        .task-list, .notes-list {
+            list-style-type: none;
         }
 
-        .task-item {
+        .task-item, .note-item {
             display: flex;
             align-items: center;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
+            padding: 12px 15px;
+            margin-bottom: 10px;
             background-color: white;
-            border-radius: var(--radius);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-            transition: var(--transition);
-            animation: slideIn 0.3s ease-out;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
             position: relative;
-            overflow: hidden;
         }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
+        .note-item {
+            background-color: var(--notes-color);
+            flex-direction: column;
+            align-items: flex-start;
         }
 
-        .task-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        .task-item:hover, .note-item:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .task-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 4px;
-            background: var(--primary);
-            border-radius: var(--radius) 0 0 var(--radius);
-        }
-
-        .task-item.completed::before {
-            background: var(--secondary);
-        }
-
-        .task-checkbox {
-            margin-right: 1rem;
-            width: 22px;
-            height: 22px;
-            cursor: pointer;
-            accent-color: var(--secondary);
+        .task-item.completed {
+            background-color: #f9f9f9;
         }
 
         .task-text {
             flex: 1;
-            margin: 0 1rem;
-            font-size: 1.1rem;
+            margin: 0 15px;
             word-break: break-word;
         }
 
-        .task-item.completed .task-text {
+        .task-text.completed {
             text-decoration: line-through;
-            color: var(--gray);
-            opacity: 0.8;
+            color: var(--completed-color);
         }
 
-        .task-actions {
-            display: flex;
-            gap: 8px;
+        .note-content {
+            width: 100%;
+            margin-bottom: 10px;
+            word-break: break-word;
         }
 
-        .task-btn {
-            width: 36px;
-            height: 36px;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
+        .note-task-ref {
+            font-size: 12px;
+            color: var(--secondary-color);
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            background-color: transparent;
-            color: var(--gray);
         }
 
-        .task-btn:hover {
-            background-color: var(--light-gray);
-            color: var(--dark);
+        .note-task-ref::before {
+            content: "🔗";
+            margin-right: 4px;
+        }
+
+        .task-actions, .note-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .task-actions button, .note-actions button {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .complete-btn {
+            background-color: var(--success-color);
+            color: white;
         }
 
         .complete-btn:hover {
-            color: var(--secondary);
+            background-color: #27ae60;
+        }
+
+        .restore-btn {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .restore-btn:hover {
+            background-color: #039be5;
+        }
+
+        .delete-btn {
+            background-color: var(--error-color);
+            color: white;
         }
 
         .delete-btn:hover {
-            color: var(--danger);
+            background-color: #c0392b;
+        }
+
+        .add-note-btn {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .add-note-btn:hover {
+            background-color: #039be5;
         }
 
         .empty-state {
             text-align: center;
-            padding: 3rem;
-            color: var(--gray);
+            padding: 30px;
+            color: #777;
         }
 
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: var(--light-gray);
+        .stats {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
         }
 
-        .empty-state p {
-            font-size: 1.1rem;
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            outline: none;
+            transition: border 0.3s;
+            resize: vertical;
+            min-height: 100px;
+            margin-bottom: 10px;
         }
 
-        @media (max-width: 768px) {
-            body {
-                padding: 1rem;
-            }
-            
-            .header h1 {
-                font-size: 2.2rem;
-            }
-            
-            .task-app {
-                padding: 1.5rem;
-            }
-            
-            .task-form {
-                flex-direction: column;
-            }
-            
-            .add-btn {
-                justify-content: center;
-            }
+        textarea:focus {
+            border-color: var(--primary-color);
         }
 
-        /* Dark mode toggle */
-        .theme-toggle {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--primary);
+        .note-form {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .note-form.active {
+            display: block;
+        }
+
+        .link-note-btn {
+            background-color: var(--primary-color);
             color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            z-index: 100;
-            transition: var(--transition);
+            margin-left: 10px;
         }
 
-        .theme-toggle:hover {
-            transform: scale(1.1);
+        .link-note-btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .note-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>NexusTask</h1>
-            <p>Organize sua vida, uma tarefa de cada vez</p>
-        </div>
-        
-        <div class="task-app">
-            <form class="task-form" id="taskForm">
-                <input type="text" class="task-input" id="taskInput" placeholder="O que precisa ser feito?" required>
-                <button type="submit" class="add-btn">
-                    <i class="fas fa-plus"></i> Adicionar
-                </button>
-            </form>
+    <h1>Lista de Tarefas com Bloco de Notas</h1>
+    
+    <div class="app-container">
+        <div class="panel">
+            <h2>Lista de Tarefas</h2>
             
-            <div class="task-stats">
-                <span id="totalTasks">0 tarefas</span>
-                <span id="completedTasks">0 concluídas</span>
+            <div class="input-group">
+                <input type="text" id="taskInput" placeholder="Adicione uma nova tarefa..." autofocus>
+                <button id="addTaskBtn">Adicionar</button>
             </div>
             
-            <ul class="task-list" id="taskList">
-                <!-- Tarefas serão inseridas aqui via JavaScript -->
-                <div class="empty-state">
-                    <i class="fas fa-tasks"></i>
-                    <p>Nenhuma tarefa encontrada</p>
-                </div>
+            <div class="filter-buttons">
+                <button class="active" data-filter="all">Todas</button>
+                <button data-filter="active">Ativas</button>
+                <button data-filter="completed">Concluídas</button>
+            </div>
+            
+            <ul id="taskList" class="task-list">
+                <!-- Tarefas serão adicionadas aqui dinamicamente -->
             </ul>
+            
+            <div id="emptyTaskState" class="empty-state" style="display: none;">
+                Nenhuma tarefa encontrada. Adicione uma nova tarefa!
+            </div>
+            
+            <div class="stats">
+                <span id="taskCount">0 tarefas</span> | 
+                <span id="completedCount">0 concluídas</span>
+            </div>
         </div>
-    </div>
-
-    <div class="theme-toggle" id="themeToggle">
-        <i class="fas fa-moon"></i>
+        
+        <div class="panel">
+            <h2>Bloco de Notas</h2>
+            
+            <button id="showNoteFormBtn" class="add-note-btn">+ Nova Nota</button>
+            
+            <div id="noteForm" class="note-form">
+                <textarea id="noteInput" placeholder="Escreva sua nota aqui..."></textarea>
+                <div class="input-group">
+                    <select id="taskReference" style="flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 4px;">
+                        <option value="">Nenhuma tarefa vinculada</option>
+                        <!-- Opções de tarefas serão preenchidas dinamicamente -->
+                    </select>
+                </div>
+                <div class="note-form-actions">
+                    <button id="cancelNoteBtn" class="delete-btn">Cancelar</button>
+                    <button id="saveNoteBtn" class="complete-btn">Salvar</button>
+                </div>
+            </div>
+            
+            <ul id="notesList" class="notes-list">
+                <!-- Notas serão adicionadas aqui dinamicamente -->
+            </ul>
+            
+            <div id="emptyNotesState" class="empty-state" style="display: none;">
+                Nenhuma nota encontrada. Crie uma nova nota!
+            </div>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const taskForm = document.getElementById('taskForm');
+            // Elementos do DOM - Tarefas
             const taskInput = document.getElementById('taskInput');
+            const addTaskBtn = document.getElementById('addTaskBtn');
             const taskList = document.getElementById('taskList');
-            const themeToggle = document.getElementById('themeToggle');
-            const totalTasksSpan = document.getElementById('totalTasks');
-            const completedTasksSpan = document.getElementById('completedTasks');
+            const emptyTaskState = document.getElementById('emptyTaskState');
+            const taskCount = document.getElementById('taskCount');
+            const completedCount = document.getElementById('completedCount');
+            const filterButtons = document.querySelectorAll('.filter-buttons button');
             
-            // Carregar tarefas e tema
-            loadTasks();
-            loadTheme();
+            // Elementos do DOM - Notas
+            const showNoteFormBtn = document.getElementById('showNoteFormBtn');
+            const noteForm = document.getElementById('noteForm');
+            const noteInput = document.getElementById('noteInput');
+            const taskReference = document.getElementById('taskReference');
+            const saveNoteBtn = document.getElementById('saveNoteBtn');
+            const cancelNoteBtn = document.getElementById('cancelNoteBtn');
+            const notesList = document.getElementById('notesList');
+            const emptyNotesState = document.getElementById('emptyNotesState');
             
-            // Adicionar nova tarefa
-            taskForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const taskText = taskInput.value.trim();
-                
-                if (taskText) {
-                    addTask(taskText);
-                    taskInput.value = '';
-                    taskInput.focus();
-                }
+            // Estado da aplicação
+            let tasks = [];
+            let notes = [];
+            let currentFilter = 'all';
+            let currentNoteId = null;
+            
+            // Carregar dados do LocalStorage
+            loadData();
+            
+            // Event Listeners - Tarefas
+            addTaskBtn.addEventListener('click', addTask);
+            taskInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addTask();
             });
             
-            // Alternar tema
-            themeToggle.addEventListener('click', toggleTheme);
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentFilter = button.dataset.filter;
+                    renderTasks();
+                });
+            });
             
-            // Função para adicionar tarefa
-            function addTask(text) {
-                const task = {
+            // Event Listeners - Notas
+            showNoteFormBtn.addEventListener('click', showNoteForm);
+            saveNoteBtn.addEventListener('click', saveNote);
+            cancelNoteBtn.addEventListener('click', hideNoteForm);
+            
+            // Funções - Tarefas
+            function addTask() {
+                const text = taskInput.value.trim();
+                if (text === '') {
+                    alert('Por favor, digite uma tarefa válida.');
+                    return;
+                }
+                
+                const newTask = {
                     id: Date.now(),
                     text: text,
                     completed: false,
                     createdAt: new Date().toISOString()
                 };
                 
-                let tasks = getTasks();
-                tasks.push(task);
-                saveTasks(tasks);
+                tasks.push(newTask);
+                saveData();
+                renderTasks();
+                updateTaskReferenceOptions();
+                
+                taskInput.value = '';
+                taskInput.focus();
+            }
+            
+            function deleteTask(id) {
+                // Remover também as notas vinculadas a esta tarefa
+                notes = notes.filter(note => note.taskId !== id);
+                tasks = tasks.filter(task => task.id !== id);
+                saveData();
+                renderTasks();
+                renderNotes();
+                updateTaskReferenceOptions();
+            }
+            
+            function toggleTaskCompletion(id) {
+                tasks = tasks.map(task => {
+                    if (task.id === id) {
+                        return { ...task, completed: !task.completed };
+                    }
+                    return task;
+                });
+                saveData();
                 renderTasks();
             }
             
-            // Função para renderizar tarefas
-            function renderTasks() {
-                const tasks = getTasks();
+            // Funções - Notas
+            function showNoteForm(noteId = null) {
+                currentNoteId = noteId;
                 
-                if (tasks.length === 0) {
-                    taskList.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-tasks"></i>
-                            <p>Nenhuma tarefa encontrada</p>
-                        </div>
-                    `;
-                    updateStats(0, 0);
+                if (noteId) {
+                    const noteToEdit = notes.find(note => note.id === noteId);
+                    if (noteToEdit) {
+                        noteInput.value = noteToEdit.content;
+                        taskReference.value = noteToEdit.taskId || '';
+                    }
+                } else {
+                    noteInput.value = '';
+                    taskReference.value = '';
+                }
+                
+                noteForm.classList.add('active');
+                noteInput.focus();
+            }
+            
+            function hideNoteForm() {
+                noteForm.classList.remove('active');
+                currentNoteId = null;
+            }
+            
+            function saveNote() {
+                const content = noteInput.value.trim();
+                const taskId = taskReference.value ? parseInt(taskReference.value) : null;
+                
+                if (content === '') {
+                    alert('Por favor, digite o conteúdo da nota.');
                     return;
                 }
                 
-                taskList.innerHTML = '';
+                if (currentNoteId) {
+                    // Editar nota existente
+                    notes = notes.map(note => {
+                        if (note.id === currentNoteId) {
+                            return { ...note, content, taskId };
+                        }
+                        return note;
+                    });
+                } else {
+                    // Criar nova nota
+                    const newNote = {
+                        id: Date.now(),
+                        content,
+                        taskId,
+                        createdAt: new Date().toISOString()
+                    };
+                    notes.push(newNote);
+                }
                 
-                // Ordenar tarefas: não completadas primeiro, depois pela data de criação
-                tasks.sort((a, b) => {
+                saveData();
+                renderNotes();
+                hideNoteForm();
+            }
+            
+            function deleteNote(id) {
+                notes = notes.filter(note => note.id !== id);
+                saveData();
+                renderNotes();
+            }
+            
+            function editNote(id) {
+                showNoteForm(id);
+            }
+            
+            // Funções auxiliares
+            function updateTaskReferenceOptions() {
+                taskReference.innerHTML = '<option value="">Nenhuma tarefa vinculada</option>';
+                
+                tasks.forEach(task => {
+                    const option = document.createElement('option');
+                    option.value = task.id;
+                    option.textContent = `${task.completed ? '✓ ' : ''}${task.text}`;
+                    taskReference.appendChild(option);
+                });
+            }
+            
+            function getTaskText(taskId) {
+                const task = tasks.find(t => t.id === taskId);
+                return task ? task.text : 'Tarefa não encontrada';
+            }
+            
+            function saveData() {
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                localStorage.setItem('notes', JSON.stringify(notes));
+            }
+            
+            function loadData() {
+                const savedTasks = localStorage.getItem('tasks');
+                const savedNotes = localStorage.getItem('notes');
+                
+                if (savedTasks) tasks = JSON.parse(savedTasks);
+                if (savedNotes) notes = JSON.parse(savedNotes);
+                
+                renderTasks();
+                renderNotes();
+                updateTaskReferenceOptions();
+            }
+            
+            function renderTasks() {
+                // Filtrar tarefas conforme o filtro selecionado
+                let filteredTasks = [];
+                if (currentFilter === 'all') {
+                    filteredTasks = tasks;
+                } else if (currentFilter === 'active') {
+                    filteredTasks = tasks.filter(task => !task.completed);
+                } else if (currentFilter === 'completed') {
+                    filteredTasks = tasks.filter(task => task.completed);
+                }
+                
+                // Ordenar tarefas: não concluídas primeiro, depois por data de criação
+                filteredTasks.sort((a, b) => {
                     if (a.completed === b.completed) {
                         return new Date(a.createdAt) - new Date(b.createdAt);
                     }
                     return a.completed ? 1 : -1;
                 });
                 
-                tasks.forEach(task => {
-                    const li = document.createElement('li');
-                    li.className = `task-item ${task.completed ? 'completed' : ''}`;
-                    li.dataset.id = task.id;
+                // Renderizar lista de tarefas
+                taskList.innerHTML = '';
+                
+                if (filteredTasks.length === 0) {
+                    emptyTaskState.style.display = 'block';
+                } else {
+                    emptyTaskState.style.display = 'none';
                     
-                    li.innerHTML = `
-                        <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
-                        <span class="task-text">${task.text}</span>
-                        <div class="task-actions">
-                            <button class="task-btn complete-btn" title="${task.completed ? 'Desfazer' : 'Completar'}">
-                                <i class="fas ${task.completed ? 'fa-undo' : 'fa-check'}"></i>
-                            </button>
-                            <button class="task-btn delete-btn" title="Excluir">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    `;
-                    
-                    // Adicionar event listeners
-                    const checkbox = li.querySelector('.task-checkbox');
-                    const completeBtn = li.querySelector('.complete-btn');
-                    const deleteBtn = li.querySelector('.delete-btn');
-                    
-                    checkbox.addEventListener('change', () => toggleTaskComplete(task.id));
-                    completeBtn.addEventListener('click', () => toggleTaskComplete(task.id));
-                    deleteBtn.addEventListener('click', () => deleteTask(task.id));
-                    
-                    taskList.appendChild(li);
+                    filteredTasks.forEach(task => {
+                        const taskItem = document.createElement('li');
+                        taskItem.className = `task-item ${task.completed ? 'completed' : ''}`;
+                        taskItem.dataset.id = task.id;
+                        
+                        // Contar notas vinculadas a esta tarefa
+                        const notesCount = notes.filter(note => note.taskId === task.id).length;
+                        
+                        taskItem.innerHTML = `
+                            <span class="task-text ${task.completed ? 'completed' : ''}">${task.text}</span>
+                            <div class="task-actions">
+                                ${notesCount > 0 ? 
+                                    `<span class="note-task-ref" title="${notesCount} nota(s) vinculada(s)">${notesCount}</span>` : ''}
+                                ${task.completed ? 
+                                    `<button class="restore-btn" title="Restaurar">↩</button>` : 
+                                    `<button class="complete-btn" title="Concluir">✓</button>`}
+                                <button class="delete-btn" title="Excluir">✕</button>
+                            </div>
+                        `;
+                        
+                        taskList.appendChild(taskItem);
+                    });
+                }
+                
+                // Adicionar event listeners aos botões das tarefas
+                document.querySelectorAll('.complete-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const taskId = parseInt(e.target.closest('.task-item').dataset.id);
+                        toggleTaskCompletion(taskId);
+                    });
+                });
+                
+                document.querySelectorAll('.restore-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const taskId = parseInt(e.target.closest('.task-item').dataset.id);
+                        toggleTaskCompletion(taskId);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const taskId = parseInt(e.target.closest('.task-item').dataset.id);
+                        if (confirm('Tem certeza que deseja excluir esta tarefa e todas as notas vinculadas?')) {
+                            deleteTask(taskId);
+                        }
+                    });
+                });
+                
+                // Adicionar event listeners aos indicadores de notas
+                document.querySelectorAll('.note-task-ref').forEach(indicator => {
+                    indicator.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const taskId = parseInt(e.target.closest('.task-item').dataset.id);
+                        currentFilter = 'all';
+                        filterButtons.forEach(btn => btn.classList.remove('active'));
+                        filterButtons[0].classList.add('active');
+                        renderTasks();
+                        
+                        // Rolagem para o bloco de notas e destaque das notas vinculadas
+                        document.querySelector('.panel:nth-child(2)').scrollIntoView({ behavior: 'smooth' });
+                        highlightNotesForTask(taskId);
+                    });
                 });
                 
                 // Atualizar estatísticas
-                const completedCount = tasks.filter(task => task.completed).
+                updateStats();
+            }
+            
+            function renderNotes() {
+                // Ordenar notas: mais recentes primeiro
+                const sortedNotes = [...notes].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                
+                // Renderizar lista de notas
+                notesList.innerHTML = '';
+                
+                if (sortedNotes.length === 0) {
+                    emptyNotesState.style.display = 'block';
+                } else {
+                    emptyNotesState.style.display = 'none';
+                    
+                    sortedNotes.forEach(note => {
+                        const noteItem = document.createElement('li');
+                        noteItem.className = 'note-item';
+                        noteItem.dataset.id = note.id;
+                        
+                        const linkedTask = note.taskId ? tasks.find(task => task.id === note.taskId) : null;
+                        
+                        noteItem.innerHTML = `
+                            <div class="note-content">${note.content.replace(/\n/g, '<br>')}</div>
+                            ${linkedTask ? 
+                                `<span class="note-task-ref" data-task-id="${linkedTask.id}">
+                                    ${linkedTask.completed ? '✓ ' : ''}${linkedTask.text}
+                                </span>` : ''}
+                            <div class="note-actions">
+                                <button class="add-note-btn" title="Editar">✎</button>
+                                <button class="delete-btn" title="Excluir">✕</button>
+                            </div>
+                        `;
+                        
+                        notesList.appendChild(noteItem);
+                    });
+                }
+                
+                // Adicionar event listeners aos botões das notas
+                document.querySelectorAll('.note-actions .add-note-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const noteId = parseInt(e.target.closest('.note-item').dataset.id);
+                        editNote(noteId);
+                    });
+                });
+                
+                document.querySelectorAll('.note-actions .delete-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const noteId = parseInt(e.target.closest('.note-item').dataset.id);
+                        if (confirm('Tem certeza que deseja excluir esta nota?')) {
+                            deleteNote(noteId);
+                        }
+                    });
+                });
+                
+                // Adicionar event listeners aos links de tarefas nas notas
+                document.querySelectorAll('.note-task-ref').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const taskId = parseInt(link.dataset.taskId);
+                        currentFilter = 'all';
+                        filterButtons.forEach(btn => btn.classList.remove('active'));
+                        filterButtons[0].classList.add('active');
+                        renderTasks();
+                        
+                        // Rolagem para a lista de tarefas e destaque da tarefa vinculada
+                        document.querySelector('.panel:nth-child(1)').scrollIntoView({ behavior: 'smooth' });
+                        highlightTask(taskId);
+                    });
+                });
+            }
+            
+            function highlightTask(taskId) {
+                // Remover destaque anterior
+                document.querySelectorAll('.task-item').forEach(item => {
+                    item.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)';
+                });
+                
+                // Aplicar novo destaque
+                const taskElement = document.querySelector(`.task-item[data-id="${taskId}"]`);
+                if (taskElement) {
+                    taskElement.style.boxShadow = '0 0 0 2px var(--accent-color)';
+                    setTimeout(() => {
+                        taskElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                }
+            }
+            
+            function highlightNotesForTask(taskId) {
+                // Remover destaque anterior
+                document.querySelectorAll('.note-item').forEach(item => {
+                    item.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)';
+                });
+                
+                // Aplicar novo destaque
+                notes
+                    .filter(note => note.taskId === taskId)
+                    .forEach(note => {
+                        const noteElement = document.querySelector(`.note-item[data-id="${note.id}"]`);
+                        if (noteElement) {
+                            noteElement.style.boxShadow = '0 0 0 2px var(--accent-color)';
+                        }
+                    });
+            }
+            
+            function updateStats() {
+                const totalTasks = tasks.length;
+                const completedTasks = tasks.filter(task => task.completed).length;
+                
+                taskCount.textContent = `${totalTasks} ${totalTasks === 1 ? 'tarefa' : 'tarefas'}`;
+                completedCount.textContent = `${completedTasks} ${completedTasks === 1 ? 'concluída' : 'concluídas'}`;
+            }
+        });
+    </script>
+</body>
+</html>
