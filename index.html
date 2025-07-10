@@ -531,6 +531,11 @@
         <span class="icone-modo" id="iconeModo">🌙</span>
         <span id="textoModo">Modo Escuro</span>
     </button>
+
+    <button id="toggleModoBtn2" class="toggle-modo-btn" title="Diminuir">
+    
+        -
+    </button>
     
     <h1>Lista de Tarefas com Bloco de Notas</h1>
     
@@ -817,7 +822,7 @@
                 } else if (filtroAtual === 'completed') {
                     tarefasFiltradas = tarefas.filter(tarefa => tarefa.completed);
                 }
-                
+
                 // Ordenar tarefas: não concluídas primeiro, depois por data de criação
                 tarefasFiltradas.sort((a, b) => {
                     if (a.completed === b.completed) {
@@ -825,39 +830,42 @@
                     }
                     return a.completed ? 1 : -1;
                 });
-                
+
                 // Renderizar lista de tarefas
                 listaTarefas.innerHTML = '';
-                
+
                 if (tarefasFiltradas.length === 0) {
                     estadoVazioTarefa.style.display = 'block';
                 } else {
                     estadoVazioTarefa.style.display = 'none';
-                    
+
                     tarefasFiltradas.forEach(tarefa => {
                         const itemTarefa = document.createElement('li');
                         itemTarefa.className = `task-item ${tarefa.completed ? 'completed' : ''}`;
                         itemTarefa.dataset.id = tarefa.id;
-                        
-                        // Contar notas vinculadas a esta tarefa
-                        const qtdNotas = notas.filter(nota => nota.taskId === tarefa.id).length;
-                        
+
+                        // Formatar data de criação
+                        const dataCriacao = new Date(tarefa.createdAt).toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                        });
+
                         itemTarefa.innerHTML = `
                             <span class="task-text ${tarefa.completed ? 'completed' : ''}">${tarefa.text}</span>
+                            <span class="task-date">Adicionado em: ${dataCriacao}</span>
                             <div class="task-actions">
-                                ${qtdNotas > 0 ? 
-                                    `<span class="note-task-ref" title="${qtdNotas} nota(s) vinculada(s)">${qtdNotas}</span>` : ''}
                                 ${tarefa.completed ? 
                                     `<button class="restore-btn" title="Restaurar">↩</button>` : 
                                     `<button class="complete-btn" title="Concluir">✓</button>`}
                                 <button class="delete-btn" title="Excluir">✕</button>
                             </div>
                         `;
-                        
+
                         listaTarefas.appendChild(itemTarefa);
                     });
                 }
-                
+
                 // Adicionar event listeners aos botões das tarefas
                 document.querySelectorAll('.complete-btn').forEach(botao => {
                     botao.addEventListener('click', (e) => {
@@ -865,14 +873,14 @@
                         alternarConclusaoTarefa(idTarefa);
                     });
                 });
-                
+
                 document.querySelectorAll('.restore-btn').forEach(botao => {
                     botao.addEventListener('click', (e) => {
                         const idTarefa = parseInt(e.target.closest('.task-item').dataset.id);
                         alternarConclusaoTarefa(idTarefa);
                     });
                 });
-                
+
                 document.querySelectorAll('.delete-btn').forEach(botao => {
                     botao.addEventListener('click', (e) => {
                         const idTarefa = parseInt(e.target.closest('.task-item').dataset.id);
@@ -881,23 +889,7 @@
                         }
                     });
                 });
-                
-                // Adicionar event listeners aos indicadores de notas
-                document.querySelectorAll('.note-task-ref').forEach(indicador => {
-                    indicador.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const idTarefa = parseInt(e.target.closest('.task-item').dataset.id);
-                        filtroAtual = 'all';
-                        botoesFiltro.forEach(btn => btn.classList.remove('active'));
-                        botoesFiltro[0].classList.add('active');
-                        exibirTarefas();
-                        
-                        // Rolagem para o bloco de notas e destaque das notas vinculadas
-                        document.querySelector('.panel:nth-child(2)').scrollIntoView({ behavior: 'smooth' });
-                        destacarNotasPorTarefa(idTarefa);
-                    });
-                });
-                
+
                 // Atualizar estatísticas
                 atualizarEstatisticas();
             }
@@ -1017,6 +1009,10 @@
         const botaoModo = document.getElementById('toggleModoBtn');
         const iconeModo = document.getElementById('iconeModo');
         const textoModo = document.getElementById('textoModo');
+        const botaoModo2 = document.getElementById('toggleModoBtn2');
+
+        // Contador de cliques (carregado do localStorage ou inicializado como 0)
+        let contadorCliques = parseInt(localStorage.getItem('contador-cliques')) || 0;
 
         // Verifica preferência do usuário (localStorage ou sistema)
         function preferenciaModoEscuro() {
@@ -1030,11 +1026,11 @@
             if (escuro) {
                 document.body.classList.add('modo-escuro');
                 iconeModo.textContent = '☀️';
-                textoModo.textContent = 'Modo Claro';
+                textoModo.textContent = `Modo Claro (${contadorCliques} cliques)`;
             } else {
                 document.body.classList.remove('modo-escuro');
                 iconeModo.textContent = '🌙';
-                textoModo.textContent = 'Modo Escuro';
+                textoModo.textContent = `Modo Escuro (${contadorCliques} cliques)`;
             }
             localStorage.setItem('modo-escuro', escuro);
         }
@@ -1043,9 +1039,21 @@
         aplicarModoEscuro(preferenciaModoEscuro());
 
         botaoModo.addEventListener('click', () => {
+            contadorCliques++;
+            localStorage.setItem('contador-cliques', contadorCliques); // Salva o contador no localStorage
             const escuro = !document.body.classList.contains('modo-escuro');
             aplicarModoEscuro(escuro);
+            
         });
+
+        botaoModo2.addEventListener('click', () => {
+                contadorCliques--;
+                localStorage.setItem('contador-cliques', contadorCliques); // Salva o contador no localStorage
+                const escuro = !document.body.classList.contains('modo-escuro');
+                aplicarModoEscuro(escuro);
+
+            });
+
     </script>
 </body>
 </html>
